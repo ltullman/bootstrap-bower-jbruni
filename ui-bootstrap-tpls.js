@@ -2319,19 +2319,33 @@ angular.module( 'ui.bootstrap.tooltip', [ 'ui.bootstrap.position', 'ui.bootstrap
               }
             };
 
-            attrs.$observe( prefix+'Trigger', function ( val ) {
-              unregisterTriggers();
+            attrs.$observe(prefix + 'Trigger', function (val) {
+              if (val != 'manual') {
+                if (hasRegisteredTriggers) {
+                  element.unbind(triggers.show, showTooltipBind);
+                  element.unbind(triggers.hide, hideTooltipBind);
+                }
 
               triggers = getTriggers( val );
 
-              if ( triggers.show === triggers.hide ) {
-                element.bind( triggers.show, toggleTooltipBind );
-              } else {
-                element.bind( triggers.show, showTooltipBind );
-                element.bind( triggers.hide, hideTooltipBind );
-              }
+                if (triggers.show === triggers.hide) {
+                  element.bind(triggers.show, toggleTooltipBind);  // for click
+                } else {
+                  element.bind(triggers.show, showTooltipBind);
+                  element.bind(triggers.hide, hideTooltipBind);
+                }
 
-              hasRegisteredTriggers = true;
+                hasRegisteredTriggers = true;
+              }
+            });
+
+            scope.$watch(attrs[prefix + 'Toggle'], function (val) {
+              if (val) {
+                $timeout(show);
+              }
+              else {
+                $timeout(hide);
+              }
             });
 
             var animation = scope.$eval(attrs[prefix + 'Animation']);
